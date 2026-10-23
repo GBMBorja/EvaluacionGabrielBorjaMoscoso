@@ -1,0 +1,76 @@
+<div class="app-wrapper">
+  <!-- Navbar Superior Blanco y Negro -->
+  <header class="navbar">
+    <div class="navbar-content">
+      <div class="brand">
+        <div class="brand-icon">🏛️</div>
+        <div>
+          <h1 class="brand-title">SISTEMA DE GESTIÓN DE TRANSFERENCIAS INTERBANCARIAS</h1>
+          <p class="brand-subtitle">Panel Operativo Full Stack (Quarkus + Angular)</p>
+        </div>
+      </div>
+      <div class="navbar-status">
+        <span class="status-indicator">●</span>
+        <span>Backend Conectado: <strong>http://localhost:8080</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal (Single Page Application) -->
+  <main class="main-container">
+    <!-- Banner de Métricas Operativas Globales -->
+    <section class="kpi-banner">
+      <div class="kpi-card">
+        <span class="kpi-label">Total Cuentas Registradas</span>
+        <span class="kpi-value">{{ cuentas.length }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Saldo Total en Custodia</span>
+        <span class="kpi-value">{{ totalSaldo | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Cuentas Activas</span>
+        <span class="kpi-value">{{ cuentasActivasCount }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total Transferencias</span>
+        <span class="kpi-value">{{ transferencias.length }}</span>
+      </div>
+    </section>
+
+    <!-- Componente CA-07: Formulario de Nueva Transferencia -->
+    <section>
+      <app-transferencia-form
+        [cuentas]="cuentas"
+        (transferenciaExitosa)="onTransferenciaExitosa($event)"
+      ></app-transferencia-form>
+    </section>
+
+    <!-- Componente CA-06: Dashboard / Tabla de Cuentas Bancarias -->
+    <section>
+      <app-cuentas
+        [cuentas]="cuentas"
+        (nuevaCuentaClicked)="abrirModalCrearCuenta()"
+      ></app-cuentas>
+    </section>
+
+    <!-- Componente CA-05: Historial y Búsqueda de Transferencias -->
+    <section>
+      <app-transferencias-historial
+        [transferencias]="transferencias"
+      ></app-transferencias-historial>
+    </section>
+  </main>
+
+  <!-- Modal Reutilizable para Registro de Nueva Cuenta -->
+  <app-cuenta-form
+    [isOpen]="modalCrearCuentaAbierto"
+    (cuentaCreada)="onCuentaCreada($event)"
+    (cancelar)="cerrarModalCrearCuenta()"
+  ></app-cuenta-form>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Evaluación Técnica Full Stack Mid-Senior | Desarrollado con <strong>Quarkus 3 & Angular 17 Standalone</strong></p>
+  </footer>
+</div>

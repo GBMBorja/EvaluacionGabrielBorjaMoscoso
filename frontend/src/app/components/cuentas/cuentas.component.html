@@ -1,0 +1,122 @@
+<div class="card">
+  <div class="card-header">
+    <div class="header-left">
+      <h2>Cuentas Bancarias Registradas</h2>
+      <span class="count-badge">{{ cuentasFiltradas.length }} cuenta(s)</span>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-black btn-sm" (click)="toggleOrdenSaldo()">
+        Ordenar por Saldo: {{ ordenAscendente ? 'Menor a Mayor ↑' : 'Mayor a Menor ↓' }}
+      </button>
+      <button type="button" class="btn btn-green" (click)="abrirModalNuevaCuenta()">
+        + Nueva Cuenta
+      </button>
+    </div>
+  </div>
+
+  <!-- Campo de Búsqueda y Filtro por Número de Cuenta / Titular -->
+  <div class="search-bar-container">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por número de cuenta (ej. 1020...) o titular..."
+        [(ngModel)]="terminoBusqueda"
+        (ngModelChange)="onBusquedaChange()"
+      />
+    </div>
+    <button
+      *ngIf="terminoBusqueda"
+      type="button"
+      class="btn btn-red btn-sm"
+      (click)="limpiarBusqueda()"
+    >
+      ✕ Limpiar Filtro
+    </button>
+    <span *ngIf="terminoBusqueda" style="font-size: 12px; color: #4b5563;">
+      Mostrando <strong>{{ cuentasFiltradas.length }}</strong> de <strong>{{ cuentas.length }}</strong> cuentas
+    </span>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>N° Cuenta</th>
+          <th>Titular</th>
+          <th>Tipo</th>
+          <th style="cursor: pointer;" (click)="toggleOrdenSaldo()">
+            Saldo Actual {{ ordenAscendente ? '↑' : '↓' }}
+          </th>
+          <th>Estado</th>
+          <th style="text-align: center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cuenta of cuentasFiltradas">
+          <td><strong>{{ cuenta.numeroCuenta }}</strong></td>
+          <td>{{ cuenta.titular }}</td>
+          <td>
+            <span class="badge" [class.badge-active]="cuenta.tipoCuenta === 'AHORRO'">
+              {{ cuenta.tipoCuenta }}
+            </span>
+          </td>
+          <td>
+            <strong>{{ cuenta.saldo | currency:'USD':'symbol':'1.2-2' }}</strong>
+          </td>
+          <td>
+            <span class="badge" [class.badge-active]="cuenta.estado === 'ACTIVA'" [class.badge-inactive]="cuenta.estado === 'INACTIVA'">
+              {{ cuenta.estado }}
+            </span>
+          </td>
+          <td style="text-align: center;">
+            <button type="button" class="btn btn-black btn-sm" (click)="verResumen(cuenta)">
+              Ver Resumen
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="cuentasFiltradas.length === 0">
+          <td colspan="6" style="text-align: center; padding: 24px; color: #666666;">
+            No se encontraron cuentas bancarias que coincidan con "{{ terminoBusqueda }}".
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal de Resumen Operativo de la Cuenta (CA-05) -->
+<app-modal [isOpen]="modalResumenAbierto" [title]="'Resumen Operativo de Cuenta'" (close)="cerrarModalResumen()">
+  <div *ngIf="resumenSeleccionado">
+    <div style="margin-bottom: 16px; border-bottom: 1px solid #000000; padding-bottom: 8px;">
+      <h4 style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">{{ resumenSeleccionado.titular }}</h4>
+      <p style="color: #666666; font-size: 13px;">N° Cuenta: <strong>{{ resumenSeleccionado.numeroCuenta }}</strong></p>
+    </div>
+
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <span class="resumen-label">Saldo Actual</span>
+        <span class="resumen-value">{{ resumenSeleccionado.saldoActual | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="resumen-card">
+        <span class="resumen-label">Transferido Hoy</span>
+        <span class="resumen-value">{{ resumenSeleccionado.totalTransferidoHoy | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="resumen-card">
+        <span class="resumen-label">Transferencias Hoy</span>
+        <span class="resumen-value">{{ resumenSeleccionado.cantidadTransferenciasHoy }}</span>
+      </div>
+      <div class="resumen-card alert-card">
+        <span class="resumen-label">Marcadas Sospechosas</span>
+        <span class="resumen-value" style="color: #b91c1c;">{{ resumenSeleccionado.cantidadSospechosas }}</span>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="padding: 16px 0 0 0; margin-top: 16px;">
+      <button type="button" class="btn btn-red" (click)="cerrarModalResumen()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</app-modal>

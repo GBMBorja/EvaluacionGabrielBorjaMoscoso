@@ -1,0 +1,111 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Nueva Transferencia Interbancaria</h2>
+  </div>
+
+  <div class="card-body">
+    <!-- Alertas de Éxito / Error -->
+    <div class="alert alert-success" *ngIf="mensajeExito">
+      <strong>✓ Operación exitosa:</strong> {{ mensajeExito }}
+    </div>
+
+    <div class="alert alert-danger" *ngIf="mensajeError">
+      <strong>✕ Error en la transferencia:</strong> {{ mensajeError }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <!-- Cuenta Origen -->
+        <div class="form-group">
+          <label class="form-label">Cuenta de Origen *</label>
+          <select
+            class="form-control"
+            [class.is-invalid]="f['numeroCuentaOrigen'].invalid && (f['numeroCuentaOrigen'].dirty || f['numeroCuentaOrigen'].touched)"
+            formControlName="numeroCuentaOrigen"
+          >
+            <option value="">-- Seleccione Cuenta Origen --</option>
+            <option
+              *ngFor="let c of cuentasActivas"
+              [value]="c.numeroCuenta"
+            >
+              {{ c.numeroCuenta }} - {{ c.titular }} (Saldo: {{ c.saldo | currency:'USD':'symbol':'1.2-2' }})
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="f['numeroCuentaOrigen'].errors?.['required']">
+            La cuenta de origen es requerida.
+          </div>
+        </div>
+
+        <!-- Cuenta Destino -->
+        <div class="form-group">
+          <label class="form-label">Cuenta de Destino *</label>
+          <select
+            class="form-control"
+            [class.is-invalid]="f['numeroCuentaDestino'].invalid && (f['numeroCuentaDestino'].dirty || f['numeroCuentaDestino'].touched)"
+            formControlName="numeroCuentaDestino"
+          >
+            <option value="">-- Seleccione Cuenta Destino --</option>
+            <option
+              *ngFor="let c of cuentasActivas"
+              [value]="c.numeroCuenta"
+              [disabled]="c.numeroCuenta === form.value.numeroCuentaOrigen"
+            >
+              {{ c.numeroCuenta }} - {{ c.titular }}
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="f['numeroCuentaDestino'].errors?.['required']">
+            La cuenta de destino es requerida.
+          </div>
+          <div class="invalid-feedback" *ngIf="form.errors?.['cuentasIguales']">
+            La cuenta de origen y destino no pueden ser iguales.
+          </div>
+        </div>
+
+        <!-- Monto a Transferir -->
+        <div class="form-group">
+          <label class="form-label">Monto a Transferir ($) *</label>
+          <input
+            type="number"
+            step="0.01"
+            class="form-control"
+            [class.is-invalid]="f['monto'].invalid && (f['monto'].dirty || f['monto'].touched)"
+            formControlName="monto"
+            placeholder="0.00"
+          />
+          <div class="invalid-feedback" *ngIf="f['monto'].errors?.['required']">
+            El monto es requerido.
+          </div>
+          <div class="invalid-feedback" *ngIf="f['monto'].errors?.['min']">
+            El monto debe ser un valor numérico mayor a cero (> $0.00).
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen rápido de saldo disponible en cuenta origen seleccionada -->
+      <div class="saldo-preview" *ngIf="cuentaOrigenSeleccionada">
+        <span>Saldo disponible en cuenta origen: <strong>{{ cuentaOrigenSeleccionada.saldo | currency:'USD':'symbol':'1.2-2' }}</strong></span>
+        <span *ngIf="form.value.monto > cuentaOrigenSeleccionada.saldo" style="color: #b91c1c; font-weight: bold;">
+          (¡Atención! El monto ingresado supera el saldo actual)
+        </span>
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="btn btn-red"
+          (click)="limpiarFormulario()"
+          [disabled]="loading"
+        >
+          Limpiar Campos
+        </button>
+        <button
+          type="submit"
+          class="btn btn-black"
+          [disabled]="form.invalid || loading"
+        >
+          {{ loading ? 'Procesando Transferencia...' : 'Ejecutar Transferencia' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

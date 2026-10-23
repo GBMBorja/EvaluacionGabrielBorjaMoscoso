@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-transferencias
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "2468"
+      MYSQL_DATABASE: "transferencias_db"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: backend-quarkus
+    restart: on-failure
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: "jdbc:mysql://mysql-db:3306/transferencias_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      QUARKUS_DATASOURCE_USERNAME: "root"
+      QUARKUS_DATASOURCE_PASSWORD: "2468"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-angular
+    restart: on-failure
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
